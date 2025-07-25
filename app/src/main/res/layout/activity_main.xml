@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:id="@+id/main"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/statusTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Accessibility Service Status: Checking..."
+        android:textSize="18sp"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@id/enableServiceButton"
+        android:gravity="center"
+        android:paddingBottom="20dp"/>
+
+    <Button
+        android:id="@+id/enableServiceButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Go to Accessibility Settings"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="20dp"/>
+
+    <Button
+        android:id="@+id/ignoreBatteryOptimizationButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Request Ignore Battery Optimization"
+        android:layout_below="@id/enableServiceButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:visibility="gone"/>
+
+    <Button
+        android:id="@+id/setAppLaunchButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set App Launch Shortcut"
+        android:layout_below="@id/ignoreBatteryOptimizationButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:visibility="gone"/> </RelativeLayout>

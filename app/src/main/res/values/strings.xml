@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">ButtonBuddy</string>
+    <string name="accessibility_service_description">This service logs power and volume button presses for debugging purposes.</string>
+</resources>
