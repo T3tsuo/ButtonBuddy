@@ -24,10 +24,11 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = "ButtonBuddyService";
     private TextView statusTextView;
     private Button enableServiceButton;
     private Button ignoreBatteryOptimizationButton;
-    private Button setAppLaunchButton; // Declare new button
+    String currentTargetApp = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,17 +44,40 @@ public class MainActivity extends AppCompatActivity {
         statusTextView = findViewById(R.id.statusTextView);
         enableServiceButton = findViewById(R.id.enableServiceButton);
         ignoreBatteryOptimizationButton = findViewById(R.id.ignoreBatteryOptimizationButton);
-        setAppLaunchButton = findViewById(R.id.setAppLaunchButton); // Initialize new button
+        // Declare new button
+        Button setAppLaunchButton = findViewById(R.id.setAppLaunchButton);
+        Button launchAppButton = findViewById(R.id.launchAppButton); // Initialize new button
 
         enableServiceButton.setOnClickListener(v -> openAccessibilitySettings());
         ignoreBatteryOptimizationButton.setOnClickListener(v -> requestIgnoreBatteryOptimizations());
-        setAppLaunchButton.setOnClickListener(v -> openAppPickerActivity()); // Set listener for new button
+        setAppLaunchButton.setOnClickListener(v -> openAppPickerActivity());
+        launchAppButton.setOnClickListener(v -> launchApp()); // Set listener for new button
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         updateServiceStatus();
+    }
+
+    private void launchApp() {
+        if (currentTargetApp == null || currentTargetApp.isEmpty()) {
+            Log.w(TAG, "No target package set or package name is empty. Cannot launch app.");
+            return;
+        }
+
+        Intent launchIntent = getPackageManager().getLaunchIntentForPackage(currentTargetApp);
+        if (launchIntent != null) {
+            launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            try {
+                startActivity(launchIntent);
+                Log.d(TAG, "Successfully launched " + currentTargetApp);
+            } catch (Exception e) {
+                Log.e(TAG, "Error launching " + currentTargetApp + ": " + e.getMessage());
+            }
+        } else {
+            Log.e(TAG, "Could not find launch intent for package: " + currentTargetApp);
+        }
     }
 
     private void openAccessibilitySettings() {
@@ -70,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
     private void updateServiceStatus() {
         boolean isServiceEnabled = isAccessibilityServiceEnabled(this);
         boolean isIgnoringBattery = isIgnoringBatteryOptimizations();
-        String currentTargetApp = AppPrefs.getTargetPackage(this);
+        currentTargetApp = AppPrefs.getTargetPackage(this);
         String appName;
 
         // Check if the current target package is the default Google Wallet package
@@ -89,30 +113,32 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (isServiceEnabled) {
-            statusTextView.setText(
-                    "Accessibility Service Status: ENABLED\n\n" +
-                            "Current launch app: " + appName +
-                            "\n\nPress and hold the Volume Down button for at least 1 second to launch " +
-                            appName + ".");
+            String statusText = "Accessibility Service Status: ENABLED\n\n" +
+                    "Current launch app: " + appName +
+                    "\n\nPress and hold the Volume Down button for at least 1 second to launch " +
+                    appName + ".";
+            statusTextView.setText(statusText);
             statusTextView.setTextColor(ContextCompat.getColor(this, android.R.color.holo_green_dark));
             enableServiceButton.setEnabled(false);
 
             // Manage visibility and state of battery optimization button
             if (isIgnoringBattery) {
-                ignoreBatteryOptimizationButton.setText("Battery Optimization: Ignored (Good)");
+                String optimizationMessage = "Battery Optimization: Ignored (Good)";
+                ignoreBatteryOptimizationButton.setText(optimizationMessage);
                 ignoreBatteryOptimizationButton.setEnabled(false);
             } else {
-                ignoreBatteryOptimizationButton.setText("Request Ignore Battery Optimization");
+                String optimizationMessage = "Request Ignore Battery Optimization";
+                ignoreBatteryOptimizationButton.setText(optimizationMessage);
                 ignoreBatteryOptimizationButton.setEnabled(true);
             }
             ignoreBatteryOptimizationButton.setVisibility(Button.VISIBLE);
-            setAppLaunchButton.setVisibility(Button.VISIBLE); // Make Set App Launch button visible
         } else {
-            statusTextView.setText("Accessibility Service Status: DISABLED\n\nPlease enable 'ButtonBuddy' in Accessibility settings to start logging events.");
+            String statusText = "Accessibility Service Status: DISABLED\n\nPlease enable 'ButtonBuddy' in Accessibility settings to start logging events.\n\n" +
+                    "Current launch app: " + appName;
+            statusTextView.setText(statusText);
             statusTextView.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_dark));
             enableServiceButton.setEnabled(true);
             ignoreBatteryOptimizationButton.setVisibility(Button.GONE);
-            setAppLaunchButton.setVisibility(Button.GONE); // Hide Set App Launch button if service is not enabled
         }
     }
 
